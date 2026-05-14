@@ -3,6 +3,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 from datetime import datetime
 import json
 import os
+import sys
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this'
@@ -11,6 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 # Store active users
 users = {}
 rooms = {}
+room_owners = {}  # Track who created each room
 messages_file = 'messages.json'
 
 # Load existing messages from file
@@ -54,7 +56,12 @@ def on_join(data):
     
     if room not in rooms:
         rooms[room] = []
+        room_owners[room] = username  # First user to join is the room owner
     rooms[room].append(username)
+    
+    # Notify client if they are the room owner
+    is_owner = room_owners.get(room) == username
+    emit('owner_status', {'is_owner': is_owner})
     
     # Send previous messages in this room
     if room in all_messages:
@@ -128,7 +135,14 @@ def handle_clear_history(data):
         emit('error', {'message': 'Not connected'})
         return
     
-    room = data['room']
+    user_info = users[request.sid]
+    room = user_info['room']
+    username = user_info['username']
+    
+    # Check if user is the room owner
+    if room_owners.get(room) != username:
+        emit('error', {'message': '❌ Only the room creator can reset the chat!'})
+        return
     
     # Clear messages for this room
     if room in all_messages:
@@ -138,12 +152,24 @@ def handle_clear_history(data):
     # Notify all users in room
     emit('message', {
         'username': 'System',
-        'message': '🗑️ Chat history has been cleared by a moderator',
+        'message': f'🗑️ Chat history has been reset by {username} (Room Owner)',
         'timestamp': datetime.now().strftime('%H:%M:%S'),
         'type': 'system'
     }, room=room)
     
-    print(f'Chat history cleared for room: {room}')
+    print(f'Chat history cleared for room: {room} by owner: {username}')
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    # Detect if running in production
+    is_production = os.environ.get('FLASK_ENV') == 'production' or os.environ.get('ENVIRONMENT') == 'production'
+    
+    # In production, disable debug mode
+    debug_mode = not is_production
+    
+    socketio.run(
+        app, 
+        debug=debug_mode, 
+        host='0.0.0.0', 
+        port=int(os.environ.get('PORT', 5000)),
+        allow_unsafe_werkzeug=True  # Allow Werkzeug server (needed for deployment)
+    )

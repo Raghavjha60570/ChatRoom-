@@ -158,9 +158,14 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
-        .clear-btn:hover {
+        .clear-btn:hover:not(:disabled) {
             background: rgba(255, 193, 7, 0.5);
             transform: scale(1.05);
+        }
+        
+        .clear-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .header-buttons {
@@ -400,6 +405,7 @@
         const socket = io();
         let currentUsername = '';
         let currentRoom = '';
+        let isRoomOwner = false;
 
         function joinChat() {
             const username = document.getElementById('usernameInput').value;
@@ -438,6 +444,11 @@
         }
 
         function clearChatHistory() {
+            if (!isRoomOwner) {
+                alert('❌ Only the room creator can reset the chat!');
+                return;
+            }
+            
             if (confirm('🗑️ Clear all messages in this room? This cannot be undone!')) {
                 const chatBody = document.getElementById('chatBody');
                 chatBody.innerHTML = '';
@@ -461,6 +472,23 @@
         }
 
         // WebSocket Events
+        socket.on('owner_status', (data) => {
+            isRoomOwner = data.is_owner;
+            const clearBtn = document.querySelector('.clear-btn');
+            const roomTitle = document.getElementById('roomTitle');
+            
+            if (isRoomOwner) {
+                clearBtn.style.opacity = '1';
+                clearBtn.style.cursor = 'pointer';
+                clearBtn.title = '🗑️ Clear all messages (You are the Room Owner)';
+                roomTitle.innerHTML += ' 👑';
+            } else {
+                clearBtn.style.opacity = '0.5';
+                clearBtn.style.cursor = 'not-allowed';
+                clearBtn.title = '❌ Only the room creator can reset the chat';
+            }
+        });
+
         socket.on('message', (data) => {
             const chatBody = document.getElementById('chatBody');
             const messageDiv = document.createElement('div');
