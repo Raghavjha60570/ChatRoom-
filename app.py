@@ -122,5 +122,28 @@ def handle_disconnect():
     
     print(f'Client disconnected: {request.sid}')
 
+@socketio.on('clear_history')
+def handle_clear_history(data):
+    if request.sid not in users:
+        emit('error', {'message': 'Not connected'})
+        return
+    
+    room = data['room']
+    
+    # Clear messages for this room
+    if room in all_messages:
+        del all_messages[room]
+        save_messages(all_messages)
+    
+    # Notify all users in room
+    emit('message', {
+        'username': 'System',
+        'message': '🗑️ Chat history has been cleared by a moderator',
+        'timestamp': datetime.now().strftime('%H:%M:%S'),
+        'type': 'system'
+    }, room=room)
+    
+    print(f'Chat history cleared for room: {room}')
+
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='0.0.0.0', port=5000)

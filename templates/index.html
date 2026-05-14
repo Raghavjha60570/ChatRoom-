@@ -122,10 +122,50 @@
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
+            margin-left: 10px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .exit-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .restart-btn {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .restart-btn:hover {
+            background: #ff6b6b;
+            transform: scale(1.05);
+        }
+        
+        .clear-btn {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .clear-btn:hover {
+            background: rgba(255, 193, 7, 0.5);
+            transform: scale(1.05);
+        }
+        
+        .header-buttons {
+            display: flex;
+            gap: 5px;
         }
         
         .chat-body {
@@ -339,7 +379,11 @@
                         <h1 id="roomTitle">Chat Room</h1>
                         <p id="userCount">Users: 0</p>
                     </div>
-                    <button class="exit-btn" onclick="exitChat()">Exit</button>
+                    <div class="header-buttons">
+                        <button class="clear-btn" onclick="clearChatHistory()" title="Clear all messages in this room">🗑️ Clear</button>
+                        <button class="restart-btn" onclick="restartChat()" title="Restart chat session">🔄 Restart</button>
+                        <button class="exit-btn" onclick="exitChat()" title="Exit and logout">❌ Exit</button>
+                    </div>
                 </div>
 
                 <div class="chat-body" id="chatBody"></div>
@@ -391,6 +435,29 @@
         function exitChat() {
             socket.disconnect();
             location.reload();
+        }
+
+        function clearChatHistory() {
+            if (confirm('🗑️ Clear all messages in this room? This cannot be undone!')) {
+                const chatBody = document.getElementById('chatBody');
+                chatBody.innerHTML = '';
+                
+                // Emit event to server to clear messages
+                socket.emit('clear_history', { room: currentRoom });
+                
+                // Show confirmation
+                const confirmDiv = document.createElement('div');
+                confirmDiv.className = 'system-message';
+                confirmDiv.textContent = '✅ Chat history cleared!';
+                chatBody.appendChild(confirmDiv);
+            }
+        }
+
+        function restartChat() {
+            if (confirm('🔄 Restart chat? You will be logged out and can join again.')) {
+                socket.disconnect();
+                location.reload();
+            }
         }
 
         // WebSocket Events
