@@ -1,0 +1,40 @@
+{
+  "general": [
+    {
+      "username": "user`",
+      "message": "heyy",
+      "timestamp": "13:51:57",
+      "type": "user"
+    },
+    {
+      "username": "Aman",
+      "message": "Heyyyy",
+      "timestamp": "13:59:58",
+      "type": "user"
+    },
+    {
+      "username": "Aman",
+      "message": "Kya kar rahe hoo",
+      "timestamp": "14:00:18",
+      "type": "user"
+    },
+    {
+      "username": "Aman",
+      "message": "??",
+      "timestamp": "14:00:21",
+      "type": "user"
+    },
+    {
+      "username": "Aman",
+      "message": "Aur bhaisahab koi kuch bolega",
+      "timestamp": "14:00:40",
+      "type": "user"
+    },
+    {
+      "username": "Lauda",
+      "message": "Lauda le lo aman",
+      "timestamp": "14:17:09",
+      "type": "user"
+    }
+  ]
+}
