@@ -160,16 +160,5 @@ def handle_clear_history(data):
     print(f'Chat history cleared for room: {room} by owner: {username}')
 
 if __name__ == '__main__':
-    # Detect if running in production
-    is_production = os.environ.get('FLASK_ENV') == 'production' or os.environ.get('ENVIRONMENT') == 'production'
-    
-    # In production, disable debug mode
-    debug_mode = not is_production
-    
-    socketio.run(
-        app, 
-        debug=debug_mode, 
-        host='0.0.0.0', 
-        port=int(os.environ.get('PORT', 5000)),
-        allow_unsafe_werkzeug=True  # Allow Werkzeug server (needed for deployment)
-    )
+    port = int(os.environ.get('PORT', 5000))
+    socketio.run(app, debug=True, host='0.0.0.0', port=port)
