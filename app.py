@@ -4,7 +4,8 @@ from datetime import datetime
 import json
 import os
 import sys
-
+import eventlet
+eventlet.monkey_patch()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this'
 socketio = SocketIO(app, cors_allowed_origins="*")
